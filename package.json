@@ -1,0 +1,61 @@
+{
+  "name": "alexa-yeelight",
+  "version": "1.0.0",
+  "description": "Connect and control your yeelight bulbs with Amazon Alexa! ",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "nodemon index.js --exec babel-node",
+    "build": "babel lib -d dist",
+    "serve": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Angelmmiguel/alexa-yeelight.git"
+  },
+  "keywords": [
+    "Yeelight",
+    "Alexa",
+    "Amazon",
+    "Bulb",
+    "SmartHome"
+  ],
+  "author": "Angel M Miguel <angel@laux.es>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Angelmmiguel/alexa-yeelight/issues"
+  },
+  "homepage": "https://github.com/Angelmmiguel/alexa-yeelight#readme",
+  "dependencies": {
+    "alexa-app": "^2.3.4",
+    "alexa-verifier": "0.0.5",
+    "body-parser": "^1.15.2",
+    "death": "^1.0.0",
+    "express": "^4.14.0",
+    "morgan": "^1.7.0",
+    "nedb": "^1.8.0",
+    "node-ssdp": "^3.0.0-beta1",
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1",
+    "react-router": "^3.0.0",
+    "socket.io": "^1.6.0",
+    "socket.io-client": "^1.6.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.8",
+    "babel-preset-latest": "^6.16.0",
+    "babel-preset-react": "^6.16.0",
+    "babel-preset-stage-3": "^6.17.0",
+    "css-loader": "^0.26.0",
+    "html-webpack-plugin": "^2.24.1",
+    "node-sass": "^3.13.0",
+    "nodemon": "^1.11.0",
+    "sass-loader": "^4.0.2",
+    "style-loader": "^0.13.1",
+    "webpack": "^1.13.3",
+    "webpack-dev-middleware": "^1.8.4",
+    "webpack-hot-middleware": "^2.13.2",
+    "whatwg-fetch": "^2.0.1"
+  }
+}
