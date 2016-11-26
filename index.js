@@ -56,12 +56,11 @@ io.on('disconnect', (socket) => {
 
 const updateBulb = (bulb) => {
   console.log('Updating bulb');
-  console.log(bulb);
 
-  db.bulbs.update({ id: bulb.id }, { $set: { ...bulb } }, (err, num) => {
+  db.bulbs.update({ id: bulb.get('id') }, { $set: { ...bulb.serialize() } }, (err, num) => {
     if (!err) {
       for (let [id, socket] in sockets) {
-        socket.emit('updated', bulb);
+        socket.emit('updated', bulb.serialize());
       }
     } else {
       console.log(`ERROR on update: ${err}`);
@@ -75,7 +74,7 @@ const createBulb = (bulb) => {
   bulb.alexaName = 'Non defined';
   bulb.initialized = false;
 
-  db.bulbs.insert(bulb, (err, newBulb) => {
+  db.bulbs.insert(bulb.serialize(), (err, newBulb) => {
     if (!err) {
       for (let [id, socket] in sockets) {
         socket.emit('discovered', newBulb)
@@ -88,7 +87,7 @@ const createBulb = (bulb) => {
 
 yeelight.on('bulb', (bulb) => {
   // Store the bulb
-  db.bulbs.findOne({ id: bulb.id }).projection({ id: 1 }).exec((err, doc) => {
+  db.bulbs.findOne({ id: bulb.get('id') }).projection({ id: 1 }).exec((err, doc) => {
     if (doc) {
       updateBulb(bulb);
     } else if (!err) {

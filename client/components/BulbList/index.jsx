@@ -2,6 +2,7 @@ import React, { PropTypes } from 'react';
 
 // Components
 import Title from '../Title';
+import Bulb from '../Bulb';
 
 /**
  * Display a List with the current bulbs and their state
@@ -29,18 +30,18 @@ class BulbList extends React.Component {
   render() {
     return <section>
       <Title>Bulbs</Title>
-      <h3>Discovered Bulbs</h3>
-      <ul>
+      <div>
+        <h3>Discovered Bulbs</h3>
         { this.newBulbs.map(b =>
-          <li key={ b._id }>{ b.alexaName }</li>
+          <Bulb key={ b._id } bulb={ b } />
         )}
-      </ul>
-      <h3>Stored Bulbs</h3>
-      <ul>
+      </div>
+      <div>
+        <h3>Stored Bulbs</h3>
         { this.storedBulbs.map(b =>
-          <li key={ b._id }>{ b.alexaName }</li>
+          <Bulb key={ b._id } bulb={ b } />
         )}
-      </ul>
+      </div>
     </section>;
   }
 }

@@ -1,9 +1,10 @@
-const Client = require('node-ssdp').Client;
-const EventEmitter = require('events').EventEmitter;
-const net = require('net');
+import { Client } from 'node-ssdp';
+import { EventEmitter } from 'events';
+import net from 'net';
+import Bulb from './bulb';
 
 class Yeelight extends EventEmitter {
-  
+
   constructor() {
     super();
 
@@ -16,28 +17,13 @@ class Yeelight extends EventEmitter {
 
     // Listen SSDP events
     this.client.on('response', (headers, statusCode, rinfo) => {
-      // TODO: MOVE TO A CLASS!!!
-      let newBulb = {
-        id: headers.ID,
-        name: headers.NAME,
-        model: headers.MODEL,
-        fwVersion: headers.FW_VER,
-        location: headers.LOCATION,
-        support: headers.SUPPORT,
-        ipAddress: rinfo.address,
-        power: headers.POWER,
-        brightness: headers.BRIGHT,
-        colorMode: headers.COLOR_MODE,
-        colorRGB: headers.RGB,
-        colorHue: headers.HUE,
-        colorSat: headers.SAT,
-      };
+      let newBulb = new Bulb(rinfo.address, headers);
 
       // When I launch the discover method, this listener will return 5 responses
       // so we need to store the elements we sent already
-      if (this.cacheBulbs.indexOf(newBulb.id) === -1) {
+      if (this.cacheBulbs.indexOf(newBulb.get('id')) === -1) {
         // Add the new Bulb
-        this.cacheBulbs.push(newBulb.id);
+        this.cacheBulbs.push(newBulb.get('id'));
         // Only emit for one element every time
         this.emit('bulb', newBulb);
       }
