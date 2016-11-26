@@ -2,7 +2,9 @@
   "presets": [
     "latest",
     "react",
-    "stage-3",
+    "stage-3"
   ],
-  "plugins": []
+  "plugins": [
+    "transform-class-properties"
+  ]
 }

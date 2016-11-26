@@ -12,9 +12,9 @@ alexaClient.intent('number',
       "say the number {1-100|number}"
     ]
   },
-  (request,response) => {
-    var number = request.slot('number');
-    response.say("You asked for the number "+number);
+  (req, res) => {
+    var number = req.slot('number');
+    res.say("You asked for the number "+number);
   }
 );
 

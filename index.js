@@ -6,9 +6,12 @@ import bodyParser from 'body-parser';
 import logger from 'morgan';
 import { loadDatabase } from './db';
 import ON_DEATH from 'death';
+import SocketIO from 'socket.io';
 // Import Alexa
-import alexaClient from './alexa';
+import alexaClient from './app/alexa';
 import alexaVerifier from 'alexa-verifier';
+// Yeelight library
+import Yeelight from './app/yeelight';
 
 // Environment
 const isDev = process.env.NODE_ENV !== 'production';
@@ -26,9 +29,80 @@ const db = loadDatabase();
 // Port and main config
 const port = isDev ? 3000 : process.env.PORT;
 const app = express();
+const server = app.listen(port);
 app.use(logger(isDev ? 'dev' : 'prod'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Initialize app
+const io = SocketIO(server);
+const sockets = new Map();
+const yeelight = new Yeelight();
+
+// Socket IO!
+io.on('connection', (socket) => {
+  sockets.set(socket.id, socket);
+  // Discover
+  yeelight.discover();
+
+  socket.on('disconnect', (socket) => {
+    sockets.delete(socket.id);
+  })
+});
+
+io.on('disconnect', (socket) => {
+  console.log('Global disconnect');
+});
+
+const updateBulb = (bulb) => {
+  console.log('Updating bulb');
+  console.log(bulb);
+
+  db.bulbs.update({ id: bulb.id }, { $set: { ...bulb } }, (err, num) => {
+    if (!err) {
+      for (let [id, socket] in sockets) {
+        socket.emit('updated', bulb);
+      }
+    } else {
+      console.log(`ERROR on update: ${err}`);
+    }
+  });
+}
+
+const createBulb = (bulb) => {
+  // New Bulb
+  console.log('Creating bulb');
+  bulb.alexaName = 'Non defined';
+  bulb.initialized = false;
+
+  db.bulbs.insert(bulb, (err, newBulb) => {
+    if (!err) {
+      for (let [id, socket] in sockets) {
+        socket.emit('discovered', newBulb)
+      }
+    } else {
+      console.log(`ERROR on discover: ${err}`);
+    }
+  });
+}
+
+yeelight.on('bulb', (bulb) => {
+  // Store the bulb
+  db.bulbs.findOne({ id: bulb.id }).projection({ id: 1 }).exec((err, doc) => {
+    if (doc) {
+      updateBulb(bulb);
+    } else if (!err) {
+      createBulb(bulb);
+    } else {
+      console.log(err);
+    }
+  });
+});
+
+// Update bulbs every 10s
+let polling = setInterval(() => {
+  //yeelight.discover();
+}, 10000);
 
 if (isDev) {
   const compiler = webpack(webpackConfig);
@@ -77,26 +151,40 @@ app.post('/alexa', (req, res) => {
         });
     }
   });
-})
+});
+
+// Get bulbs
+app.get('/api/bulbs', (req, res) => {
+  // Retrieve all bulbs
+  db.bulbs.find({}, (err, docs) => {
+    if (err) {
+      console.log(err);
+      res.status(500).json({ error: err }).end();
+    } else {
+      res.json({ items: docs }).end();
+    }
+  })
+});
 
 // Fallback routes
 if (isDev) {
-  app.get('*', function response(req, res) {
+  app.get('*', (req, res) => {
     res.write(middleware.fileSystem.readFileSync(path.join(__dirname, 'dist/index.html')));
     res.end();
   });
 } else {
-  app.get('*', function response(req, res) {
+  app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist/index.html'));
   });
 }
 
-app.listen(3000, () => {
+server.on('listening', () => {
   console.log('Alexa Yeelight is listening on 3000!');
 });
 
 // Cleanup the application (Watchers...)
 ON_DEATH(() => {
   console.log('Finishing...');
+  clearInterval(polling);
   process.exit(0);
 })
