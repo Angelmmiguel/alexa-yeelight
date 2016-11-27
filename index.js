@@ -98,11 +98,6 @@ yeelight.on('bulb', (bulb) => {
   });
 });
 
-// Update bulbs every 10s
-let polling = setInterval(() => {
-  //yeelight.discover();
-}, 10000);
-
 if (isDev) {
   const compiler = webpack(webpackConfig);
   middleware = webpackMiddleware(compiler, {
@@ -165,6 +160,11 @@ app.get('/api/bulbs', (req, res) => {
   })
 });
 
+// Update a bulb
+app.patch('/api/bulbs/:id', (req, res) => {
+  db.bulbs.findOne({ id: bulb.get('id') })
+});
+
 // Fallback routes
 if (isDev) {
   app.get('*', (req, res) => {
@@ -184,6 +184,6 @@ server.on('listening', () => {
 // Cleanup the application (Watchers...)
 ON_DEATH(() => {
   console.log('Finishing...');
-  clearInterval(polling);
+  //clearInterval(polling);
   process.exit(0);
 })
