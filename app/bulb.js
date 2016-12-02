@@ -96,7 +96,7 @@ class Bulb {
 
     // Send to the server
     this.client.connect(55443, this.ipAddress, () => {
-      this.client.end(request);
+      this.client.end(request + "\r\n");
     });
 
     this.client.on('data', (res) => {
